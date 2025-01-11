@@ -21,6 +21,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlin.coroutines.cancellation.CancellationException
 
 class NewsRepositoryImpl(
     private val httpClient: HttpClient,
@@ -54,6 +55,7 @@ class NewsRepositoryImpl(
                 loadRemoteNews(nextPage = null)
             } catch (e: Exception) {
                 e.printStackTrace()
+                if(e is CancellationException) throw e
                 print(tag + " getNews remote exception:" + e.message)
                 null
             }
@@ -73,12 +75,13 @@ class NewsRepositoryImpl(
         }
     }
 
-    override suspend fun paginate(nextPage: String): Flow<NewsResult<NewsList>> {
+    override suspend fun paginate(nextPage: String?): Flow<NewsResult<NewsList>> {
         return flow {
             val remoteNews = try {
                 loadRemoteNews(nextPage = nextPage)
             } catch (e: Exception) {
                 e.printStackTrace()
+                if(e is CancellationException) throw e
                 print(tag + " paginate remote exception:" + e.message)
                 null
             }

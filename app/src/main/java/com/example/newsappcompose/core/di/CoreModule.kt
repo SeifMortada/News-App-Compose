@@ -2,7 +2,11 @@ package com.example.newsappcompose.core.di
 
 import androidx.room.Room
 import com.example.newsappcompose.core.data.local.ArticleDatabase
+import com.example.newsappcompose.core.data.repository.NewsRepositoryImpl
+import com.example.newsappcompose.core.domain.NewsRepository
 import org.koin.android.ext.koin.androidApplication
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val coreModule = module {
@@ -17,4 +21,6 @@ val coreModule = module {
     single {
         ktorClient
     }
+
+    singleOf(::NewsRepositoryImpl).bind<NewsRepository>()
 }
