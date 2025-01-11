@@ -60,7 +60,7 @@ class NewsViewModel(private val newsRepository: NewsRepository) : ViewModel() {
                         val updatedArticles = newsResult.data?.articles ?: emptyList()
                         state.copy(
                             articlesList = state.articlesList + updatedArticles,
-                            nextPage = newsResult.data?.nextPage + 1,
+                            nextPage = newsResult.data?.nextPage,
                             isError = false
                         )
                     }
