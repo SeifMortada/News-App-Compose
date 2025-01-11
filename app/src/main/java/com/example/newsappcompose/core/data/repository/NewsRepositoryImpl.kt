@@ -2,8 +2,7 @@ package com.example.newsappcompose.core.data.repository
 
 import com.example.newsappcompose.core.data.local.ArticlesDao
 import com.example.newsappcompose.core.data.mappers.toArticleEntity
-import com.example.newsappcompose.core.data.mappers.toNews
-import com.example.newsappcompose.core.data.mappers.toNewsList
+import com.example.newsappcompose.core.data.mappers.toArticle
 import com.example.newsappcompose.core.data.remote.request.NewsListDto
 import com.example.newsappcompose.core.data.utils.CoreConstants.API_KEY
 import com.example.newsappcompose.core.data.utils.CoreConstants.API_KEY_QUERY
@@ -34,7 +33,7 @@ class NewsRepositoryImpl(
         print(tag + "loadLocalNews: " + localNews.size + " next page: " + nextPage)
         val newsList = NewsList(
             nextPage = nextPage,
-            articles = localNews.map { it.toNews() }
+            articles = localNews.map { it.toArticle() }
         )
         return newsList
     }
@@ -46,7 +45,7 @@ class NewsRepositoryImpl(
             if (nextPage != null) parameter(PAGE_QUERY, nextPage)
         }.body()
         print(tag + "loadRemoteNews: " + newsListDto.results?.size + " next page: " + nextPage)
-        return newsListDto.toNewsList()
+        return newsListDto.toArticle()
     }
 
     override suspend fun getNews(): Flow<NewsResult<NewsList>> {
@@ -55,7 +54,7 @@ class NewsRepositoryImpl(
                 loadRemoteNews(nextPage = null)
             } catch (e: Exception) {
                 e.printStackTrace()
-                if(e is CancellationException) throw e
+                if (e is CancellationException) throw e
                 print(tag + " getNews remote exception:" + e.message)
                 null
             }
@@ -81,7 +80,7 @@ class NewsRepositoryImpl(
                 loadRemoteNews(nextPage = nextPage)
             } catch (e: Exception) {
                 e.printStackTrace()
-                if(e is CancellationException) throw e
+                if (e is CancellationException) throw e
                 print(tag + " paginate remote exception:" + e.message)
                 null
             }
@@ -95,6 +94,29 @@ class NewsRepositoryImpl(
     }
 
     override suspend fun getArticle(articleId: String): Flow<NewsResult<Article>> {
-        TODO("Not yet implemented")
+        return flow {
+            dao.getArticle(articleId)?.let { articleEntity ->
+                emit(NewsResult.Success(data = articleEntity.toArticle()))
+                return@flow
+            }
+            try {
+                val remoteArticle: NewsListDto = httpClient.get(BASE_URL) {
+                    parameter(API_KEY_QUERY, API_KEY)
+                    parameter("id", articleId)
+                }.body()
+                println((tag + " getArticle remote:" + remoteArticle.results?.size))
+                if (remoteArticle.results?.isNotEmpty() == true) {
+                    emit(NewsResult.Success(data = remoteArticle.results.first().toArticle()))
+                    return@flow
+                } else {
+                    emit(NewsResult.Error(errorMessage = "No data"))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (e is CancellationException) throw e
+                print(tag + " getArticle exception:" + e.message)
+                emit(NewsResult.Error(errorMessage = "No data"))
+            }
+        }
     }
 }

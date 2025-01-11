@@ -5,14 +5,14 @@ import com.example.newsappcompose.core.data.remote.request.NewsListDto
 import com.example.newsappcompose.core.domain.Article
 import com.example.newsappcompose.core.domain.NewsList
 
-fun NewsListDto.toNewsList(): NewsList {
+fun NewsListDto.toArticle(): NewsList {
     return NewsList(
         nextPage = nextPage?:"",
-        articles = results?.map { it.toNewsList() } ?: emptyList()
+        articles = results?.map { it.toArticle() } ?: emptyList()
     )
 }
 
-fun ArticleDto.toNewsList(): Article {
+fun ArticleDto.toArticle(): Article {
     return Article(
         articleId = article_id ?: "",
         title = title ?: "",

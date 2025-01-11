@@ -3,7 +3,7 @@ package com.example.newsappcompose.core.data.mappers
 import com.example.newsappcompose.core.data.local.ArticleEntity
 import com.example.newsappcompose.core.domain.Article
 
-fun ArticleEntity.toNews(): Article {
+fun ArticleEntity.toArticle(): Article {
     return Article(
         articleId = articleId,
         title = title,
